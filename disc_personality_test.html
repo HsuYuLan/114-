@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DISC 人格分析測驗</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --d: #E84040;
+    --i: #F5A623;
+    --s: #4CAF82;
+    --c: #4A90D9;
+    --bg: #0D0D14;
+    --bg2: #13131F;
+    --surface: #1A1A2E;
+    --border: rgba(255,255,255,0.08);
+    --text: #F0EDE8;
+    --text-muted: rgba(240,237,232,0.5);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans TC', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── PAGES ── */
+  .page { display: none; min-height: 100vh; }
+  .page.active { display: flex; }
+
+  /* ── INTRO PAGE ── */
+  #page-intro {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #page-intro::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 20% 30%, rgba(232,64,64,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 60% at 80% 70%, rgba(74,144,217,0.12) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .intro-disc-ring {
+    position: relative;
+    width: 220px;
+    height: 220px;
+    margin-bottom: 40px;
+    flex-shrink: 0;
+  }
+
+  .disc-ring-svg { width: 220px; height: 220px; animation: spinSlow 20s linear infinite; }
+
+  @keyframes spinSlow { to { transform: rotate(360deg); } }
+
+  .disc-center {
+    position: absolute;
+    inset: 30px;
+    background: var(--surface);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Noto Serif TC', serif;
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: var(--text);
+  }
+
+  .intro-title {
+    font-family: 'Noto Serif TC', serif;
+    font-size: clamp(28px, 6vw, 48px);
+    font-weight: 900;
+    text-align: center;
+    line-height: 1.2;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, var(--d) 0%, var(--i) 50%, var(--c) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .intro-sub {
+    color: var(--text-muted);
+    text-align: center;
+    max-width: 520px;
+    line-height: 1.8;
+    font-size: 15px;
+    margin-bottom: 48px;
+  }
+
+  .disc-types {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    width: 100%;
+    max-width: 560px;
+    margin-bottom: 48px;
+  }
+
+  .type-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s, border-color 0.3s;
+  }
+  .type-card:hover { transform: translateY(-3px); }
+  .type-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .type-card.d::before { background: var(--d); border-color: var(--d); }
+  .type-card.i::before { background: var(--i); }
+  .type-card.s::before { background: var(--s); }
+  .type-card.c::before { background: var(--c); }
+  .type-card:hover.d { border-color: var(--d); }
+  .type-card:hover.i { border-color: var(--i); }
+  .type-card:hover.s { border-color: var(--s); }
+  .type-card:hover.c { border-color: var(--c); }
+
+  .type-letter {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 36px;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .type-card.d .type-letter { color: var(--d); }
+  .type-card.i .type-letter { color: var(--i); }
+  .type-card.s .type-letter { color: var(--s); }
+  .type-card.c .type-letter { color: var(--c); }
+
+  .type-name { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+  .type-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+  .btn-start {
+    background: linear-gradient(135deg, var(--d), var(--i));
+    color: #fff;
+    border: none;
+    padding: 18px 56px;
+    border-radius: 50px;
+    font-family: 'Noto Serif TC', serif;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 2px;
+    box-shadow: 0 8px 32px rgba(232,64,64,0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .btn-start:hover { transform: scale(1.04); box-shadow: 0 12px 40px rgba(232,64,64,0.5); }
+
+  /* ── QUIZ PAGE ── */
+  #page-quiz {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+    min-height: 100vh;
+  }
+
+  .progress-bar-wrap {
+    width: 100%;
+    max-width: 640px;
+    margin-bottom: 32px;
+  }
+
+  .progress-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .progress-track {
+    height: 4px;
+    background: var(--surface);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--d), var(--i));
+    border-radius: 4px;
+    transition: width 0.4s ease;
+  }
+
+  .question-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 36px 32px;
+    width: 100%;
+    max-width: 640px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .question-card::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(232,64,64,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .question-num {
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .question-text {
+    font-family: 'Noto Serif TC', serif;
+    font-size: clamp(16px, 3vw, 20px);
+    font-weight: 700;
+    line-height: 1.7;
+    margin-bottom: 32px;
+    color: var(--text);
+  }
+
+  .answers-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .answer-btn {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 20px;
+    color: var(--text);
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .answer-btn:hover {
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(255,255,255,0.2);
+    transform: translateX(4px);
+  }
+
+  .answer-tag {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+  }
+  .answer-btn:nth-child(1) .answer-tag { color: var(--d); border-color: var(--d); }
+  .answer-btn:nth-child(2) .answer-tag { color: var(--i); border-color: var(--i); }
+  .answer-btn:nth-child(3) .answer-tag { color: var(--s); border-color: var(--s); }
+  .answer-btn:nth-child(4) .answer-tag { color: var(--c); border-color: var(--c); }
+
+  .answer-btn.selected:nth-child(1) { background: rgba(232,64,64,0.15); border-color: var(--d); }
+  .answer-btn.selected:nth-child(2) { background: rgba(245,166,35,0.15); border-color: var(--i); }
+  .answer-btn.selected:nth-child(3) { background: rgba(76,175,130,0.15); border-color: var(--s); }
+  .answer-btn.selected:nth-child(4) { background: rgba(74,144,217,0.15); border-color: var(--c); }
+
+  /* ── RESULT PAGE ── */
+  #page-result {
+    flex-direction: column;
+    align-items: center;
+    padding: 60px 24px;
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #page-result::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 70% 40% at 50% 0%, rgba(232,64,64,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .result-badge {
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Noto Serif TC', serif;
+    font-size: 52px;
+    font-weight: 900;
+    margin-bottom: 24px;
+    position: relative;
+    z-index: 1;
+    animation: popIn 0.6s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  @keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+  .result-title {
+    font-family: 'Noto Serif TC', serif;
+    font-size: clamp(24px, 5vw, 36px);
+    font-weight: 900;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+
+  .result-subtitle {
+    color: var(--text-muted);
+    font-size: 15px;
+    margin-bottom: 40px;
+    text-align: center;
+  }
+
+  .score-bars {
+    width: 100%;
+    max-width: 520px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px;
+    margin-bottom: 28px;
+  }
+
+  .score-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .score-row:last-child { margin-bottom: 0; }
+
+  .score-label {
+    font-family: 'Noto Serif TC', serif;
+    font-weight: 900;
+    font-size: 18px;
+    width: 24px;
+    text-align: center;
+  }
+
+  .score-track {
+    flex: 1;
+    height: 8px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .score-bar {
+    height: 100%;
+    border-radius: 8px;
+    transition: width 1s cubic-bezier(.25,.46,.45,.94);
+    width: 0%;
+  }
+
+  .score-val {
+    font-size: 13px;
+    color: var(--text-muted);
+    width: 32px;
+    text-align: right;
+  }
+
+  .result-desc-card {
+    width: 100%;
+    max-width: 520px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px;
+    margin-bottom: 28px;
+  }
+
+  .result-desc-card h3 {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-size: 12px;
+  }
+
+  .result-desc-card p {
+    font-size: 15px;
+    line-height: 1.9;
+    color: var(--text);
+  }
+
+  .btn-group {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 8px;
+  }
+
+  .btn-secondary {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 14px 32px;
+    border-radius: 50px;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-secondary:hover { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.07); }
+
+  .btn-save {
+    background: linear-gradient(135deg, var(--s), var(--c));
+    color: #fff;
+    border: none;
+    padding: 14px 32px;
+    border-radius: 50px;
+    font-family: 'Noto Serif TC', serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 6px 24px rgba(76,175,130,0.3);
+    transition: all 0.2s;
+  }
+  .btn-save:hover { transform: scale(1.04); }
+
+  .toast {
+    position: fixed;
+    bottom: 80px; right: 24px;
+    background: var(--s);
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-size: 14px;
+    z-index: 9999;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- ── INTRO PAGE ── -->
+<div id="page-intro" class="page active">
+  <div class="intro-disc-ring">
+    <svg class="disc-ring-svg" viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="110" cy="110" r="100" fill="none" stroke="#E84040" stroke-width="3" stroke-dasharray="80 80 80 80" opacity="0.5"/>
+      <circle cx="110" cy="110" r="86" fill="none" stroke="#F5A623" stroke-width="2" stroke-dasharray="60 75 60 75" opacity="0.4"/>
+      <circle cx="110" cy="110" r="72" fill="none" stroke="#4CAF82" stroke-width="2" stroke-dasharray="50 63 50 63" opacity="0.4"/>
+      <circle cx="110" cy="110" r="58" fill="none" stroke="#4A90D9" stroke-width="2" stroke-dasharray="40 51 40 51" opacity="0.4"/>
+      <!-- Dots -->
+      <circle cx="110" cy="10" r="4" fill="#E84040"/>
+      <circle cx="210" cy="110" r="4" fill="#F5A623"/>
+      <circle cx="110" cy="210" r="4" fill="#4CAF82"/>
+      <circle cx="10" cy="110" r="4" fill="#4A90D9"/>
+    </svg>
+    <div class="disc-center">DISC</div>
+  </div>
+
+  <h1 class="intro-title">人格分析測驗</h1>
+  <p class="intro-sub">透過 DISC 模型，深入了解你的行為風格與性格特質，找到最適合你的工作環境與團隊角色。</p>
+
+  <div class="disc-types">
+    <div class="type-card d">
+      <div class="type-letter">D</div>
+      <div class="type-name">Dominance 主導型</div>
+      <div class="type-desc">結果導向、自信決斷、具競爭心，善於在高壓環境中快速決策。</div>
+    </div>
+    <div class="type-card i">
+      <div class="type-letter">I</div>
+      <div class="type-name">Influence 影響型</div>
+      <div class="type-desc">熱情外向、善於溝通、富感染力，能激勵周遭的人。</div>
+    </div>
+    <div class="type-card s">
+      <div class="type-letter">S</div>
+      <div class="type-name">Steadiness 穩健型</div>
+      <div class="type-desc">耐心溫和、重視和諧、值得信賴，是團隊中穩定的核心。</div>
+    </div>
+    <div class="type-card c">
+      <div class="type-letter">C</div>
+      <div class="type-name">Compliance 謹慎型</div>
+      <div class="type-desc">分析細心、追求精確、系統思考，注重品質與標準。</div>
+    </div>
+  </div>
+
+  <button class="btn-start" onclick="startQuiz()">開始測驗</button>
+</div>
+
+<!-- ── QUIZ PAGE ── -->
+<div id="page-quiz" class="page">
+  <div class="progress-bar-wrap">
+    <div class="progress-meta">
+      <span id="q-current">第 1 題</span>
+      <span id="q-total">共 20 題</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill" style="width:5%"></div>
+    </div>
+  </div>
+  <div class="question-card" id="question-card">
+    <div class="question-num" id="q-num">QUESTION 01</div>
+    <div class="question-text" id="q-text"></div>
+    <div class="answers-grid" id="answers-grid"></div>
+  </div>
+  <button id="btn-prev" class="btn-secondary" style="margin-top: 24px; display: none; width: 100%; max-width: 640px; text-align: center;" onclick="prevQuestion()">回到上一題</button>
+</div>
+
+<!-- ── RESULT PAGE ── -->
+<div id="page-result" class="page">
+  <div class="result-badge" id="result-badge"></div>
+  <div class="result-title" id="result-title"></div>
+  <div class="result-subtitle" id="result-subtitle"></div>
+
+  <div class="score-bars">
+    <div class="score-row">
+      <div class="score-label" style="color:var(--d)">D</div>
+      <div class="score-track"><div class="score-bar" id="bar-d" style="background:var(--d)"></div></div>
+      <div class="score-val" id="val-d">0</div>
+    </div>
+    <div class="score-row">
+      <div class="score-label" style="color:var(--i)">I</div>
+      <div class="score-track"><div class="score-bar" id="bar-i" style="background:var(--i)"></div></div>
+      <div class="score-val" id="val-i">0</div>
+    </div>
+    <div class="score-row">
+      <div class="score-label" style="color:var(--s)">S</div>
+      <div class="score-track"><div class="score-bar" id="bar-s" style="background:var(--s)"></div></div>
+      <div class="score-val" id="val-s">0</div>
+    </div>
+    <div class="score-row">
+      <div class="score-label" style="color:var(--c)">C</div>
+      <div class="score-track"><div class="score-bar" id="bar-c" style="background:var(--c)"></div></div>
+      <div class="score-val" id="val-c">0</div>
+    </div>
+  </div>
+
+  <div class="result-desc-card">
+    <h3>性格描述</h3>
+    <p id="result-desc"></p>
+  </div>
+
+  <div class="result-desc-card">
+    <h3>對應名人</h3>
+    <p id="result-celeb"></p>
+  </div>
+
+  <div class="btn-group">
+    <button class="btn-save" onclick="saveResult()">儲存結果</button>
+    <button class="btn-secondary" onclick="restartQuiz()">重新測驗</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── QUESTIONS ──────────────────────────────────────────────────────
+const questions = [
+  {
+    q: "在一個新專案剛啟動時，你通常會：",
+    D: "立刻掌控方向，主動提出執行計畫",
+    I: "廣邀大家腦力激盪，製造熱鬧氣氛",
+    S: "耐心聆聽每個人的意見，協助整合共識",
+    C: "仔細蒐集資料，確保計畫有足夠依據"
+  },
+  {
+    q: "面對突如其來的挑戰或危機，你的第一反應是：",
+    D: "馬上採取行動，迅速解決問題",
+    I: "先激勵團隊，保持大家的信心與士氣",
+    S: "保持冷靜，協助穩定團隊情緒",
+    C: "分析原因，擬定系統化的應對方案"
+  },
+  {
+    q: "在團隊合作中，你最自然扮演的角色是：",
+    D: "領導者，負責做最終決策",
+    I: "激勵者，讓氣氛活躍並凝聚向心力",
+    S: "協調者，確保每個人都被照顧到",
+    C: "品管者，確保工作符合標準與規範"
+  },
+  {
+    q: "別人通常如何形容你？",
+    D: "果斷、有魄力、直接",
+    I: "熱情、活潑、善於交際",
+    S: "溫和、可靠、善解人意",
+    C: "細心、嚴謹、邏輯清晰"
+  },
+  {
+    q: "當你需要做一個重要決定時，你會：",
+    D: "快速評估後立即決定，不猶豫",
+    I: "詢問周遭朋友的看法，再憑直覺決定",
+    S: "考慮決定對所有人的影響，再謹慎選擇",
+    C: "蒐集大量資料，反覆分析後再決定"
+  },
+  {
+    q: "在工作環境中，你最重視的是：",
+    D: "自主權與掌控感",
+    I: "良好的人際關係與快樂的氣氛",
+    S: "穩定的環境與清楚的工作流程",
+    C: "高品質的成果與精確的標準"
+  },
+  {
+    q: "當你與他人意見不同時，你傾向於：",
+    D: "直接說出自己的立場，據理力爭",
+    I: "用幽默或說服的方式化解歧異",
+    S: "盡量避免衝突，尋求雙方都能接受的方案",
+    C: "用數據和事實來證明自己的觀點"
+  },
+  {
+    q: "你在壓力下的表現通常是：",
+    D: "更加專注，迎難而上",
+    I: "尋求他人支持，用正向態度面對",
+    S: "保持穩定，默默承擔並持續完成任務",
+    C: "更加謹慎，反覆確認每個細節"
+  },
+  {
+    q: "你最喜歡的工作方式是：",
+    D: "獨立作業，自己主導進度",
+    I: "與他人合作，在互動中激發靈感",
+    S: "在穩定、有條理的環境中按部就班",
+    C: "有明確規範與標準可以依循"
+  },
+  {
+    q: "對你而言，成功最重要的要素是：",
+    D: "達成目標，超越競爭對手",
+    I: "獲得他人的認可與欣賞",
+    S: "維繫良好關係，讓大家都滿意",
+    C: "完成高品質、零錯誤的成果"
+  },
+  {
+    q: "在休閒時間，你最享受的活動是：",
+    D: "挑戰性高的運動或競技活動",
+    I: "與朋友聚會、社交活動",
+    S: "輕鬆的家庭活動或幫助朋友",
+    C: "閱讀、研究或學習新知識"
+  },
+  {
+    q: "你通常如何處理工作中的錯誤？",
+    D: "快速承認，立刻著手修正",
+    I: "輕鬆看待，鼓勵自己再接再厲",
+    S: "認真檢討，但避免讓氣氛太沉重",
+    C: "深入分析原因，建立機制避免再犯"
+  },
+  {
+    q: "你在會議中的表現通常是：",
+    D: "主導討論，推動會議快速進行",
+    I: "活絡氣氛，讓大家踴躍發言",
+    S: "耐心聆聽，在適當時機提供意見",
+    C: "準備充分的資料，提出有條理的分析"
+  },
+  {
+    q: "你最在乎的個人價值觀是：",
+    D: "成就感與影響力",
+    I: "人際連結與樂趣",
+    S: "和諧與忠誠",
+    C: "精確與專業"
+  },
+  {
+    q: "當團隊遇到瓶頸時，你會：",
+    D: "打破僵局，提出大膽的突破方向",
+    I: "鼓舞士氣，讓大家重新燃起熱情",
+    S: "提供持續的支持，陪伴團隊度過難關",
+    C: "系統性地找出問題根源，提出解決方案"
+  },
+  {
+    q: "對於規則與流程，你的態度是：",
+    D: "視情況而定，必要時會突破限制",
+    I: "靈活運用，不希望被過多規定束縛",
+    S: "尊重既有流程，確保大家都能配合",
+    C: "嚴格遵守，並確保他人也遵循規範"
+  },
+  {
+    q: "你在陌生環境中的社交方式是：",
+    D: "主動出擊，快速建立領導地位",
+    I: "積極與人攀談，迅速融入人群",
+    S: "觀察環境後，再慢慢融入",
+    C: "先了解場合背景，再選擇性地互動"
+  },
+  {
+    q: "當你需要說服他人時，你會：",
+    D: "直接陳述利弊，強調效率與結果",
+    I: "用熱情和故事打動對方",
+    S: "強調對雙方的好處，建立信任感",
+    C: "用詳細的數據與邏輯說服對方"
+  },
+  {
+    q: "你對於「改變」的態度是：",
+    D: "主動推動改變，視為成長機會",
+    I: "樂於接受新事物，享受變化帶來的新鮮感",
+    S: "謹慎看待，需要時間適應",
+    C: "評估改變的風險與影響後再決定是否接受"
+  },
+  {
+    q: "你最希望別人記得你的是：",
+    D: "你完成了艱難的目標，帶領大家走向成功",
+    I: "你讓周圍的人感到快樂，並激發了他們的潛能",
+    S: "你是一個值得信賴、始終支持他人的夥伴",
+    C: "你做出了精確、高品質且經得起考驗的成果"
+  },
+];
+
+const DISC_INFO = {
+  D: {
+    name: "主導型 Dominance (獅子)",
+    color: "#E84040",
+    desc: "你是一個果斷、自信、以結果為導向的人。你喜歡掌控局面，在競爭環境中表現出色，善於快速決策和克服挑戰。",
+    celeb: "代表人物：<a href='https://zh.wikipedia.org/wiki/%E5%8F%B2%E8%92%82%E5%A4%AB%C2%B7%E4%B9%94%E5%B8%83%E6%96%AF' target='_blank' style='color:var(--d); text-decoration:underline;'>賈伯斯（Steve Jobs）</a>、<a href='https://zh.wikipedia.org/wiki/%E9%A9%AC%E4%BA%9A' target='_blank' style='color:var(--d); text-decoration:underline;'>傑克·馬（Jack Ma）</a>——果敢領導、勇於突破的先驅者。"
+  },
+  I: {
+    name: "影響型 Influence (孔雀)",
+    color: "#F5A623",
+    desc: "你是一個熱情洋溢、善於溝通的人。你天生具有感染力，擅長激勵他人，在需要創意和人際互動的環境中如魚得水。",
+    celeb: "代表人物：<a href='https://zh.wikipedia.org/wiki/%E5%A5%A5%E6%99%AE%E6%8B%89%C2%B7%E6%B8%A9%E5%BC%97%E9%87%8C' target='_blank' style='color:var(--i); text-decoration:underline;'>歐普拉（Oprah Winfrey）</a>、<a href='https://zh.wikipedia.org/wiki/%E6%AF%94%E5%B0%94%C2%B7%E5%85%8B%E6%9E%97%E9%A1%BF' target='_blank' style='color:var(--i); text-decoration:underline;'>比爾·柯林頓（Bill Clinton）</a>——魅力四射的溝通高手。"
+  },
+  S: {
+    name: "穩健型 Steadiness (貓頭鷹)",
+    color: "#4CAF82",
+    desc: "你是一個耐心、可靠、重視和諧的人。你是團隊的穩定支柱，善於傾聽和支持他人，在需要協作的環境中貢獻卓越。",
+    celeb: "代表人物：<a href='https://zh.wikipedia.org/zh-tw/%E5%8A%A0%E7%88%BE%E5%90%84%E7%AD%94%E7%9A%84%E5%BE%B7%E8%82%8B%E6%92%92%E4%BF%AE%E5%A5%B3' target='_blank' style='color:var(--s); text-decoration:underline;'>德蕾莎修女（Mother Teresa）</a>、<a href='https://zh.wikipedia.org/zh-tw/%E6%B2%83%E4%BC%A6%C2%B7%E5%B7%B4%E8%8F%B2%E7%89%B9' target='_blank' style='color:var(--s); text-decoration:underline;'>沃倫·巴菲特（Warren Buffett）</a>——穩定可靠的核心力量。"
+  },
+  C: {
+    name: "謹慎型 Compliance (無尾熊)",
+    color: "#4A90D9",
+    desc: "你是一個分析性強、注重細節、追求精確的人。你系統化思考，重視品質與標準，在需要嚴謹和專業知識的領域中大放光彩。",
+    celeb: "代表人物：<a href='https://zh.wikipedia.org/wiki/%E6%AF%94%E5%B0%94%C2%B7%E7%9B%96%E8%8C%A8' target='_blank' style='color:var(--c); text-decoration:underline;'>比爾·蓋茲（Bill Gates）</a>、<a href='https://zh.wikipedia.org/wiki/%E5%9F%83%E9%9A%86%C2%B7%E9%A9%AC%E6%96%AF%E5%85%8B' target='_blank' style='color:var(--c); text-decoration:underline;'>艾隆·馬斯克（Elon Musk）</a>——精確計算、系統革新的思想家。"
+  },
+  Chameleon: {
+    name: "綜合平衡型 Chameleon (變色龍)",
+    color: "#930093",
+    desc: "你是一個極具彈性與適應力的人。當面對不同的環境或人群時，你能夠像變色龍一樣，隨時調整自己的行為模式。你在 D、I、S、C 各個角色之間切換自如，不偏執於某一種固定的風格，擅長在各種群體中扮演完美的協調與平衡者。",
+    celeb: "風格定位：靈活多變、因時制宜的通才——能夠完美融入各類團隊，在不同情境下皆能發揮卓越適應力的全方位人才。"
+  }
+};
+
+// ── STATE ──────────────────────────────────────────────────────────
+let scores = { D: 0, I: 0, S: 0, C: 0 };
+let currentQ = 0;
+let shuffledQ = [];
+let shuffledA = [];
+
+// ── NAVIGATION ─────────────────────────────────────────────────────
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ── SHUFFLE ────────────────────────────────────────────────────────
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// ── QUIZ ───────────────────────────────────────────────────────────
+function startQuiz() {
+  scores = { D: 0, I: 0, S: 0, C: 0 };
+  currentQ = 0;
+  shuffledQ = shuffle([...questions]);
+  shuffledQ = shuffledQ.map(q => {
+    const answers = [
+      { type: 'D', text: q.D || '（此選項尚未填寫）' },
+      { type: 'I', text: q.I || '（此選項尚未填寫）' },
+      { type: 'S', text: q.S || '（此選項尚未填寫）' },
+      { type: 'C', text: q.C || '（此選項尚未填寫）' },
+    ];
+    return { q: q.q, answers: shuffle(answers), chosenType: null };
+  });
+  showPage('page-quiz');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const total = shuffledQ.length;
+  const idx = currentQ;
+  const item = shuffledQ[idx];
+
+  document.getElementById('q-current').textContent = `第 ${idx + 1} 題`;
+  document.getElementById('q-total').textContent = `共 ${total} 題`;
+  document.getElementById('q-num').textContent = `QUESTION ${String(idx + 1).padStart(2, '0')}`;
+  document.getElementById('q-text').textContent = item.q;
+  document.getElementById('progress-fill').style.width = `${((idx) / total) * 100}%`;
+
+  const prevBtn = document.getElementById('btn-prev');
+  if (prevBtn) {
+    prevBtn.style.display = idx > 0 ? 'inline-block' : 'none';
+  }
+
+  const grid = document.getElementById('answers-grid');
+  grid.innerHTML = '';
+  const labels = ['A', 'B', 'C', 'D'];
+  item.answers.forEach((a, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'answer-btn';
+    btn.dataset.type = a.type;
+    btn.innerHTML = `<span class="answer-tag">${labels[i]}</span><span>${a.text}</span>`;
+    
+    if (item.chosenType === a.type) {
+      btn.classList.add('selected');
+    }
+
+    btn.onclick = () => selectAnswer(a.type, btn);
+    grid.appendChild(btn);
+  });
+
+  // Animate card
+  const card = document.getElementById('question-card');
+  card.style.opacity = '0';
+  card.style.transform = 'translateY(20px)';
+  setTimeout(() => {
+    card.style.transition = 'opacity 0.35s, transform 0.35s';
+    card.style.opacity = '1';
+    card.style.transform = 'translateY(0)';
+  }, 50);
+}
+
+function selectAnswer(type, btn) {
+  // Visual feedback
+  document.querySelectorAll('.answer-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+
+  if (shuffledQ[currentQ].chosenType) {
+    scores[shuffledQ[currentQ].chosenType]--;
+  }
+
+  shuffledQ[currentQ].chosenType = type;
+  scores[type]++;
+
+  // Next question after short delay
+  setTimeout(() => {
+    currentQ++;
+    if (currentQ >= shuffledQ.length) {
+      showResult();
+    } else {
+      renderQuestion();
+    }
+  }, 450);
+}
+
+function prevQuestion() {
+  if (currentQ > 0) {
+    currentQ--; 
+    const prevChoice = shuffledQ[currentQ].chosenType;
+    if (prevChoice) {
+      scores[prevChoice]--; 
+      shuffledQ[currentQ].chosenType = null; 
+    }
+    renderQuestion();
+  }
+}
+
+// ── RESULT ─────────────────────────────────────────────────────────
+function showResult() {
+
+  const sortedScores = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+  const maxScore = sortedScores[0][1];
+  const highestTypes = sortedScores.filter(entry => entry[1] === maxScore);
+  
+  let dominant;
+  if (highestTypes.length >= 2) {
+    dominant = 'Chameleon'; 
+  } else {
+    dominant = sortedScores[0][0];
+  }
+
+  const info = DISC_INFO[dominant];
+  const total = Object.values(scores).reduce((a, b) => a + b, 0);
+
+  const badge = document.getElementById('result-badge');
+
+  if (dominant === 'Chameleon') {
+    badge.textContent = '變色龍';
+    badge.style.fontSize = '24px';
+  } else {
+    badge.textContent = dominant;
+    badge.style.fontSize = '52px';
+  }
+  badge.style.background = info.color + '22';
+  badge.style.border = `3px solid ${info.color}`;
+  badge.style.color = info.color;
+
+  document.getElementById('result-title').textContent = info.name;
+  document.getElementById('result-title').style.color = info.color;
+  document.getElementById('result-subtitle').textContent = `你的主要人格類型`;
+  document.getElementById('result-desc').textContent = info.desc;
+  document.getElementById('result-celeb').innerHTML = info.celeb;
+
+  showPage('page-result');
+
+  // Animate bars
+  setTimeout(() => {
+    ['D', 'I', 'S', 'C'].forEach(t => {
+      const pct = total > 0 ? (scores[t] / total) * 100 : 0;
+      document.getElementById(`bar-${t.toLowerCase()}`).style.width = pct + '%';
+      document.getElementById(`val-${t.toLowerCase()}`).textContent = scores[t];
+    });
+  }, 300);
+}
+
+function restartQuiz() { showPage('page-intro'); }
+
+function saveResult() {
+
+  const sortedScores = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+  const maxScore = sortedScores[0][1];
+  const highestTypes = sortedScores.filter(entry => entry[1] === maxScore);
+  
+  let dominant = highestTypes.length >= 2 ? 'Chameleon' : sortedScores[0][0];
+  const info = DISC_INFO[dominant];
+
+  const cleanCeleb = info.celeb.replace(/<[^>]*>/g, '');
+  
+  const text = `DISC 人格測驗結果\n類型：${info.name}\n分數 D:${scores.D} I:${scores.I} S:${scores.S} C:${scores.C}\n\n【性格描述】\n${info.desc}\n\n【名言與定位】\n${cleanCeleb}`;
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = `DISC結果_${dominant}.txt`; a.click();
+  URL.revokeObjectURL(url);
+  showToast('結果已儲存！');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+</script>
+</body>
+</html>
